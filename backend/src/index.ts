@@ -80,6 +80,8 @@ async function start() {
     await db.migrate.latest({
       directory: migrationsDir,
       extension: isCompiled ? 'js' : 'ts',
+      // Prevent Knex from loading .d.ts declaration files as migrations
+      loadExtensions: isCompiled ? ['.js'] : ['.ts'],
     });
     console.log('✅ Migrations complete.');
 
