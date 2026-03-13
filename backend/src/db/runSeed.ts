@@ -10,9 +10,12 @@ import path from 'path';
 // Run migrations first
 async function main() {
   console.log('Running migrations...');
+  // In production (compiled), __dirname is dist/db → use .js
+  // In development (tsx), __dirname is src/db → use .ts
+  const isCompiled = __dirname.includes('dist');
   await db.migrate.latest({
     directory: path.join(__dirname, 'migrations'),
-    extension: 'ts',
+    extension: isCompiled ? 'js' : 'ts',
   });
   console.log('✅ Migrations complete');
 

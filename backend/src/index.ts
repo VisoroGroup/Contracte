@@ -73,12 +73,12 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 async function start() {
   try {
     console.log('Running database migrations...');
-    // Support both .ts (dev) and .js (production compiled)
+    // In production (compiled dist/), use .js; in dev (tsx src/), use .ts
     const migrationsDir = path.join(__dirname, 'db/migrations');
-    const ext = fs.existsSync(migrationsDir + '/20240101_initial_schema.ts') ? 'ts' : 'js';
+    const isCompiled = __dirname.includes('dist');
     await db.migrate.latest({
       directory: migrationsDir,
-      extension: ext,
+      extension: isCompiled ? 'js' : 'ts',
     });
     console.log('✅ Migrations complete.');
 
