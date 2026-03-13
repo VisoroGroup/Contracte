@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import path from 'path';
 import fs from 'fs';
 import db from './db';
+import { seed } from './db/seeds/initial';
 
 // Routes
 import authRouter from './routes/auth';
@@ -82,10 +83,28 @@ async function start() {
     });
     console.log('✅ Migrations complete.');
 
+    // Start listening FIRST so /api/health responds immediately
     app.listen(PORT, () => {
       console.log(`🚀 Backend running at http://localhost:${PORT}`);
       console.log(`📁 Storage path: ${storagePath}`);
     });
+
+    // Auto-seed in the background only if DB is empty (first boot)
+    setImmediate(async () => {
+      try {
+        const row = await db('users').count('id as count').first();
+        if (!row || Number(row.count) === 0) {
+          console.log('🌱 Empty database — running auto-seed...');
+          await seed(db);
+          console.log('✅ Auto-seed complete.');
+        } else {
+          console.log(`ℹ️  Database already seeded (${row.count} users) — skipping.`);
+        }
+      } catch (seedErr) {
+        console.error('⚠️  Auto-seed failed (non-fatal):', seedErr);
+      }
+    });
+
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);

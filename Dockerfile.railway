@@ -46,5 +46,5 @@ ENV PORT=3001
 
 EXPOSE 3001
 
-# Run seed (runs migrate + initial data), then start the server
-CMD ["sh", "-c", "node dist/db/runSeed.js && node dist/index.js"]
+# Server handles migrations + auto-seed internally on first boot
+CMD ["node", "dist/index.js"]
