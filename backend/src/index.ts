@@ -25,14 +25,21 @@ const storagePath = process.env.STORAGE_PATH || path.join(__dirname, '../../../s
 // Middleware
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.NODE_ENV === 'production' ? true : (process.env.FRONTEND_URL || 'http://localhost:5173'),
   credentials: true,
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Static file serving for logos
+// Static file serving for storage (logos etc)
 app.use('/storage', express.static(storagePath));
+
+// Serve built frontend in production
+const isDev = process.env.NODE_ENV !== 'production';
+const publicPath = path.join(__dirname, '../public');
+if (!isDev && fs.existsSync(publicPath)) {
+  app.use(express.static(publicPath));
+}
 
 // API Routes
 app.use('/api/auth', authRouter);
@@ -47,9 +54,13 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Contract Management Platform API', version: '1.0.0' });
 });
 
-// Catch-all 404
+// Catch-all: serve React SPA in production, 404 in dev
 app.use((req, res) => {
-  res.status(404).json({ success: false, error: 'Not Found', details: `Route ${req.path} not found.` });
+  if (process.env.NODE_ENV === 'production' && fs.existsSync(publicPath)) {
+    res.sendFile(path.join(publicPath, 'index.html'));
+  } else {
+    res.status(404).json({ success: false, error: 'Not Found', details: `Route ${req.path} not found.` });
+  }
 });
 
 // Error handler
@@ -62,9 +73,12 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 async function start() {
   try {
     console.log('Running database migrations...');
+    // Support both .ts (dev) and .js (production compiled)
+    const migrationsDir = path.join(__dirname, 'db/migrations');
+    const ext = fs.existsSync(migrationsDir + '/20240101_initial_schema.ts') ? 'ts' : 'js';
     await db.migrate.latest({
-      directory: path.join(__dirname, 'db/migrations'),
-      extension: 'ts',
+      directory: migrationsDir,
+      extension: ext,
     });
     console.log('✅ Migrations complete.');
 

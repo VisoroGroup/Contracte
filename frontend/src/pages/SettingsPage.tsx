@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Save, Plus, Trash2, Edit2, Users, Building, Tag, Upload, X, Eye, EyeOff } from 'lucide-react';
+import { Save, Plus, Trash2, Edit2, Users, Building, Tag, Upload, X, Eye, EyeOff, Image } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useDropzone } from 'react-dropzone';
 import { settingsApi, categoriesApi, usersApi } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -50,13 +51,39 @@ function CompanyTab() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ['settings'], queryFn: settingsApi.get });
   const [form, setForm] = useState<Record<string, string>>({});
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  useEffect(() => { if (data?.data) setForm(data.data); }, [data]);
+  useEffect(() => {
+    if (data?.data) {
+      setForm(data.data);
+      if (data.data.logo_path) setLogoPreview(`/api/settings/logo?t=${Date.now()}`);
+    }
+  }, [data]);
 
   const updateMutation = useMutation({
     mutationFn: () => settingsApi.update(form),
     onSuccess: () => { toast.success('Settings saved'); qc.invalidateQueries({ queryKey: ['settings'] }); },
     onError: () => toast.error('Failed to save'),
+  });
+
+  const uploadLogoMutation = useMutation({
+    mutationFn: (file: File) => {
+      const fd = new FormData(); fd.append('logo', file);
+      return settingsApi.uploadLogo(fd);
+    },
+    onSuccess: () => { toast.success('Logo uploaded'); qc.invalidateQueries({ queryKey: ['settings'] }); },
+    onError: () => toast.error('Logo upload failed'),
+  });
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.svg', '.webp'] },
+    maxFiles: 1,
+    onDrop: ([file]) => {
+      if (file) {
+        setLogoPreview(URL.createObjectURL(file));
+        uploadLogoMutation.mutate(file);
+      }
+    },
   });
 
   const fields = [
@@ -74,6 +101,30 @@ function CompanyTab() {
 
   return (
     <div className="space-y-5">
+      {/* Logo upload */}
+      <div className="card p-5">
+        <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2"><Image size={15} />Company Logo</h2>
+        <div className="flex items-center gap-5">
+          <div className="w-20 h-20 rounded-xl border-2 border-gray-200 flex items-center justify-center bg-gray-50 overflow-hidden flex-shrink-0">
+            {logoPreview
+              ? <img src={logoPreview} alt="Company logo" className="w-full h-full object-contain" />
+              : <Image size={24} className="text-gray-300" />}
+          </div>
+          <div
+            {...getRootProps()}
+            className={`flex-1 border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all ${
+              isDragActive ? 'border-gold-400 bg-gold-50' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+            }`}
+            id="logo-dropzone"
+          >
+            <input {...getInputProps()} />
+            <Upload size={16} className="mx-auto mb-1 text-gray-300" />
+            <p className="text-xs text-gray-500">{isDragActive ? 'Drop here!' : 'Drag & drop your logo or click to browse'}</p>
+            <p className="text-xs text-gray-400 mt-0.5">PNG, JPG, SVG · Recommended: 200×200px+</p>
+          </div>
+        </div>
+      </div>
+
       <div className="card p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
         {fields.map(f => (
           <div key={f.key}>

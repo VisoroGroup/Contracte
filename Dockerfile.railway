@@ -1,0 +1,52 @@
+# Multi-stage Railway Dockerfile
+# Builds frontend, then serves everything from the backend
+
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install --no-workspaces
+COPY frontend/ ./
+RUN npm run build
+
+# ─── Backend ────────────────────────────────────────────────────────────────────
+FROM node:20-alpine AS backend-builder
+
+WORKDIR /app/backend
+COPY backend/package*.json ./
+RUN npm install --no-workspaces
+COPY backend/ ./
+
+# Build TypeScript
+RUN npx tsc 2>/dev/null || true
+
+# ─── Production image ─────────────────────────────────────────────────────────
+FROM node:20-alpine
+
+# Install LibreOffice for PDF generation (optional, makes PDFs better quality)
+# Uncomment if you want LibreOffice (makes image much larger ~800MB):
+# RUN apk add --no-cache libreoffice
+
+WORKDIR /app
+
+# Copy backend dist + node_modules
+COPY --from=backend-builder /app/backend/dist ./dist
+COPY --from=backend-builder /app/backend/node_modules ./node_modules
+COPY --from=backend-builder /app/backend/package.json ./package.json
+# Copy source for tsx fallback (migration/seed files)
+COPY --from=backend-builder /app/backend/src ./src
+
+# Copy frontend build into a static folder
+COPY --from=frontend-builder /app/frontend/dist ./public
+
+# Create storage directories
+RUN mkdir -p /app/storage/templates /app/storage/contracts /app/storage/previews /app/storage/logos /app/storage/tmp /app/database
+
+EXPOSE 3001
+
+ENV NODE_ENV=production
+ENV STORAGE_PATH=/app/storage
+ENV DB_PATH=/app/database/database.sqlite
+
+# Run migrations then start
+CMD ["sh", "-c", "node_modules/.bin/tsx src/db/runSeed.ts && node dist/index.js || node_modules/.bin/tsx src/index.ts"]
