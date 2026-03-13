@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=change-this-in-production-please
+      - DB_PATH=/data/database.sqlite
+      - STORAGE_PATH=/storage
+    volumes:
+      - ./database:/data
+      - ./storage:/storage
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:3001
+    restart: unless-stopped
+
+volumes:
+  database:
+  storage:

@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+build/
+
+# Database
+database/
+*.sqlite
+*.sqlite3
+*.db
+
+# Storage (uploaded files)
+storage/
+
+# Environment files
+.env
+.env.local
+.env.production
+backend/.env
+frontend/.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# TypeScript build info
+*.tsbuildinfo

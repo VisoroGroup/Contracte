@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --sidebar-width: 260px;
+  }
+}
+
+@layer components {
+  /* Sidebar */
+  .sidebar {
+    @apply bg-navy-900 text-white flex flex-col;
+    width: var(--sidebar-width);
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-150 text-sm font-medium cursor-pointer;
+  }
+
+  .sidebar-link.active {
+    @apply bg-gold-500/20 text-gold-400 border-l-2 border-gold-400;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150 cursor-pointer border-0 outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-gold-500 text-navy-900 hover:bg-gold-400 focus:ring-gold-500 shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 focus:ring-gray-300 shadow-sm;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-gray-500 hover:bg-gray-100 focus:ring-gray-200;
+  }
+
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-xl border border-gray-200 shadow-sm;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-gray-100 flex items-center justify-between;
+  }
+
+  /* Forms */
+  .form-input {
+    @apply w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-white placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:border-transparent transition-all duration-150;
+  }
+
+  .form-input.error {
+    @apply border-red-300 focus:ring-red-400;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1.5;
+  }
+
+  .form-error {
+    @apply text-xs text-red-600 mt-1 flex items-center gap-1;
+  }
+
+  /* Status badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-draft {
+    @apply badge bg-gray-100 text-gray-600;
+  }
+
+  .badge-generated {
+    @apply badge bg-blue-100 text-blue-700;
+  }
+
+  .badge-sent {
+    @apply badge bg-yellow-100 text-yellow-700;
+  }
+
+  .badge-signed {
+    @apply badge bg-green-100 text-green-700;
+  }
+
+  .badge-archived {
+    @apply badge bg-slate-100 text-slate-500;
+  }
+
+  /* Yellow field highlight (for template preview) */
+  .yellow-field {
+    @apply bg-yellow-200 text-yellow-900 px-1 py-0.5 rounded font-medium;
+  }
+
+  .yellow-field-filled {
+    @apply text-gray-900 font-medium;
+  }
+
+  .yellow-field-empty {
+    @apply border-2 border-dashed border-red-400 bg-red-50 text-red-500 px-2 py-0 rounded text-xs italic;
+  }
+
+  /* Page header */
+  .page-header {
+    @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold text-gray-900;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-gray-500 mt-0.5;
+  }
+
+  /* Table */
+  .table-row {
+    @apply hover:bg-gray-50 transition-colors duration-100;
+  }
+
+  /* Step wizard */
+  .step-indicator {
+    @apply flex items-center gap-2 text-sm font-medium;
+  }
+
+  .step-circle {
+    @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2;
+  }
+
+  .step-circle-active {
+    @apply step-circle bg-gold-500 border-gold-500 text-navy-900;
+  }
+
+  .step-circle-done {
+    @apply step-circle bg-green-100 border-green-500 text-green-700;
+  }
+
+  .step-circle-pending {
+    @apply step-circle bg-gray-100 border-gray-300 text-gray-400;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
